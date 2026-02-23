@@ -13,8 +13,8 @@ type Vector = { x: number; y: number };
 const body = document.body;
 body.style.margin = "0";
 body.style.fontFamily = "Inter, 'Segoe UI', system-ui";
-body.style.background = "#060914";
-body.style.color = "#f4f4f5";
+body.style.background = "radial-gradient(circle at top, #142236, #070914 65%)";
+body.style.color = "#f8fbff";
 body.style.minHeight = "100vh";
 body.style.display = "flex";
 body.style.alignItems = "center";
@@ -41,8 +41,10 @@ overlay.style.top = "18px";
 overlay.style.left = "50%";
 overlay.style.transform = "translateX(-50%)";
 overlay.style.pointerEvents = "none";
+overlay.style.color = "#dbe9ff";
+overlay.style.textShadow = "0 0 20px rgba(43,214,255,0.3)";
 overlay.innerHTML = `
-  <div style="font-size: 0.9rem; letter-spacing: 0.2em; opacity: 0.7; text-transform: uppercase;">Professional Pong | W/S + ↑/↓ controls</div>
+  <div style="font-size: 0.9rem; letter-spacing: 0.2em; opacity: 0.8; text-transform: uppercase;">Professional Pong | W/S + ↑/↓ controls</div>
 `;
 
 const scoreboard = document.createElement("div");
@@ -55,10 +57,14 @@ scoreboard.style.left = "50%";
 scoreboard.style.transform = "translateX(-50%)";
 scoreboard.style.width = `${CANVAS_WIDTH - 160}px`;
 scoreboard.style.pointerEvents = "none";
+scoreboard.style.background = "rgba(8, 12, 30, 0.65)";
+scoreboard.style.borderRadius = "999px";
+scoreboard.style.padding = "14px 18px";
+scoreboard.style.boxShadow = "0 12px 30px rgba(0, 0, 10, 0.45)";
 scoreboard.innerHTML = `
-  <span style="font-size: 1rem; text-align: left; opacity: 0.75;">Status: <strong id=run-status>Paused</strong></span>
-  <span style="font-size: 2rem; font-weight: 600; text-align: center;">0 &mdash; 0</span>
-  <span style="font-size: 1rem; text-align: right; opacity: 0.75;">Best of ${SCORE_LIMIT}</span>
+  <span style="font-size: 0.95rem; text-align: left; opacity: 0.8; letter-spacing: 0.08em;">Status: <strong id=run-status>Paused</strong></span>
+  <span style="font-size: 2rem; font-weight: 600; text-align: center; letter-spacing: 0.2em;">0 &mdash; 0</span>
+  <span style="font-size: 0.95rem; text-align: right; opacity: 0.8; letter-spacing: 0.08em;">Best of ${SCORE_LIMIT}</span>
 `;
 
 const container = document.createElement("div");
@@ -121,7 +127,7 @@ const leftPaddle: Paddle = {
   width: PADDLE_WIDTH,
   height: PADDLE_HEIGHT,
   speed: PADDLE_SPEED,
-  color: "#f9f9ff",
+  color: "#e2f1ff",
 };
 
 const rightPaddle: Paddle = {
@@ -130,14 +136,14 @@ const rightPaddle: Paddle = {
   width: PADDLE_WIDTH,
   height: PADDLE_HEIGHT,
   speed: PADDLE_SPEED * 0.95,
-  color: "#f9f9ff",
+  color: "#c5e7ff",
 };
 
 const ball: Ball = {
   pos: { x: CANVAS_WIDTH / 2, y: CANVAS_HEIGHT / 2 },
   vel: { x: 0, y: 0 },
   radius: BALL_RADIUS,
-  color: "#00e0ff",
+  color: "#2bd6ff",
 };
 
 let leftScore = 0;
@@ -238,12 +244,13 @@ function update(dt: number) {
 
 function draw() {
   const gradient = ctx.createLinearGradient(0, 0, 0, CANVAS_HEIGHT);
-  gradient.addColorStop(0, "#06091a");
-  gradient.addColorStop(1, "#0a132a");
+  gradient.addColorStop(0, "#0f1b3f");
+  gradient.addColorStop(0.4, "#0c1430");
+  gradient.addColorStop(1, "#070a1a");
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
-  ctx.strokeStyle = "rgba(255,255,255,0.08)";
+  ctx.strokeStyle = "rgba(255,255,255,0.12)";
   ctx.lineWidth = 2;
   ctx.setLineDash([18, 18]);
   ctx.beginPath();
@@ -260,21 +267,28 @@ function draw() {
     ball.pos.y,
     ball.radius * 4
   );
-  glow.addColorStop(0, "rgba(0, 224, 255, 0.8)");
-  glow.addColorStop(1, "rgba(0, 224, 255, 0)");
+  glow.addColorStop(0, "rgba(43, 214, 255, 0.85)");
+  glow.addColorStop(1, "rgba(43, 214, 255, 0)");
   ctx.fillStyle = glow;
   ctx.beginPath();
   ctx.arc(ball.pos.x, ball.pos.y, ball.radius * 3.5, 0, Math.PI * 2);
   ctx.fill();
 
-  ctx.fillStyle = "#0f1a2f";
+  ctx.fillStyle = leftPaddle.color;
   ctx.fillRect(leftPaddle.x, leftPaddle.y, leftPaddle.width, leftPaddle.height);
+  ctx.fillStyle = rightPaddle.color;
   ctx.fillRect(rightPaddle.x, rightPaddle.y, rightPaddle.width, rightPaddle.height);
 
+  ctx.save();
+  ctx.shadowColor = "rgba(43, 214, 255, 0.85)";
+  ctx.shadowBlur = 18;
+  ctx.shadowOffsetX = 0;
+  ctx.shadowOffsetY = 0;
   ctx.fillStyle = ball.color;
   ctx.beginPath();
   ctx.arc(ball.pos.x, ball.pos.y, ball.radius, 0, Math.PI * 2);
   ctx.fill();
+  ctx.restore();
 
   ctx.fillStyle = "rgba(255, 255, 255, 0.12)";
   ctx.font = "12px 'Segoe UI', system-ui";
@@ -307,12 +321,14 @@ playButton.addEventListener("click", () => {
 
 window.addEventListener("keydown", (event) => {
   if (event.key in keyState) {
+    event.preventDefault();
     keyState[event.key as keyof typeof keyState] = true;
   }
 });
 
 window.addEventListener("keyup", (event) => {
   if (event.key in keyState) {
+    event.preventDefault();
     keyState[event.key as keyof typeof keyState] = false;
   }
 });
